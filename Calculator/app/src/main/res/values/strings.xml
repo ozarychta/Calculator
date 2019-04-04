@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Calculator</string>
+    <string name="hello_text">Let\'s calculate!</string>
+    <string name="change_btn_text">Button</string>
+    <string name="next_activity_text">next activity</string>
+    <string name="simple_calc_activity_name">Simple Calculator</string>
+    <string name="advanced_calc_activity_name">Advanced Calculator</string>
+    <string name="about_activity_name">About</string>
+    <string name="simple_calculator_btn">Simple</string>
+    <string name="advanced_calculator_btn">Advanced</string>
+    <string name="about_btn">About</string>
+    <string name="exit_btn">Exit</string>
+    <string name="about_author_text">Author: Oliwia Zarychta</string>
+    <string name="about_text">\tIt\'s a calculator application created in purpose of learning the basics of creating Android apps.\n
+        It provides two calculator modes : simple and advanced. Simple calculator version provides basic operations on floating point numbers.
+        Advanced calculator implements all simple calculator\'s operations and also more advanced operations. \n Let\'s calculate things!</string>
+    <string name="c_btn_text">C</string>
+</resources>
