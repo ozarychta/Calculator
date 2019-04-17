@@ -17,6 +17,8 @@ public class SimpleCalculatorActivity extends AppCompatActivity implements View.
     private static final String CURRENT_CALC = "current_calc";
     private static final String VALUE_ONE = "value_one";
     private static final String VALUE_TWO = "value_two";
+    private static final String LAST_OPERATION = "last_operation";
+    private static final String WAS_C_CLICKED = "was_c_clicked";
 
     private TextView lastCalculationTextView;
     private TextView currentlyEnteredTextView;
@@ -60,6 +62,9 @@ public class SimpleCalculatorActivity extends AppCompatActivity implements View.
             currentlyEnteredTextView.setText(savedInstanceState.getString(CURRENT_CALC));
             firstValue = Double.parseDouble(savedInstanceState.getString(VALUE_ONE));
             secondValue = Double.parseDouble(savedInstanceState.getString(VALUE_TWO));
+            lastOperation = savedInstanceState.getString(LAST_OPERATION);
+            wasCBtnAlreadyClickedOnce = Boolean.parseBoolean(savedInstanceState.getString(WAS_C_CLICKED));
+
         }
 
         btn1 = findViewById(R.id.btn1);
@@ -117,6 +122,8 @@ public class SimpleCalculatorActivity extends AppCompatActivity implements View.
         outState.putString(CURRENT_CALC, currentlyEnteredTextView.getText().toString());
         outState.putString(VALUE_ONE, String.valueOf(firstValue));
         outState.putString(VALUE_TWO, String.valueOf(secondValue));
+        outState.putString(LAST_OPERATION, lastOperation);
+        outState.putString(WAS_C_CLICKED, String.valueOf(wasCBtnAlreadyClickedOnce));
     }
 
 
@@ -138,7 +145,7 @@ public class SimpleCalculatorActivity extends AppCompatActivity implements View.
 
             } else if (isOperationButton(buttonValue)) {
 
-                if (!(currentTextInTextView.isEmpty() || isProperNumber(currentTextInTextView))) {
+                if (currentTextInTextView.isEmpty() || !isProperNumber(currentTextInTextView)) {
                     Toast.makeText(getApplicationContext(), "You have to enter a proper number now.", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -219,7 +226,11 @@ public class SimpleCalculatorActivity extends AppCompatActivity implements View.
                 } else firstValue /= secondValue;
             }
 
-            lastCalculationTextView.setText(lastCalculationsText + simpleFormat.format(secondValue));
+            if("=".equals(lastOperation)){
+                lastCalculationTextView.setText(simpleFormat.format(secondValue));
+            } else {
+                lastCalculationTextView.setText(lastCalculationsText + simpleFormat.format(secondValue));
+            }
             currentlyEnteredTextView.setText("");
         } else {
             firstValue = Double.parseDouble(currentTextInTextView);

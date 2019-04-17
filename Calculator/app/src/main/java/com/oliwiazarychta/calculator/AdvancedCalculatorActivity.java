@@ -17,6 +17,9 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
     private static final String CURRENT_CALC = "current_calc";
     private static final String VALUE_ONE = "value_one";
     private static final String VALUE_TWO = "value_two";
+    private static final String LAST_TWO_ARG_OPERATION = "last_two_arg_operation";
+    private static final String LAST_ONE_ARG_OPERATION = "last_one_arg_operation";
+    private static final String WAS_C_CLICKED = "was_c_clicked";
 
     private TextView lastCalculationTextView;
     private TextView currentlyEnteredTextView;
@@ -51,7 +54,8 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
 
     private double firstValue = Double.NaN;
     private double secondValue = Double.NaN;
-    private String lastOperation = "";
+    private String lastTwoArgumentOperation = "";
+    private String lastOneArgumentOperation = "";
     private boolean wasCBtnAlreadyClickedOnce = false;
     private DecimalFormat simpleFormat = new DecimalFormat("#.########");
     private DecimalFormat scientificFormat = new DecimalFormat("#.######E0");
@@ -70,6 +74,9 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
             currentlyEnteredTextView.setText(savedInstanceState.getString(CURRENT_CALC));
             firstValue = Double.parseDouble(savedInstanceState.getString(VALUE_ONE));
             secondValue = Double.parseDouble(savedInstanceState.getString(VALUE_TWO));
+            lastTwoArgumentOperation = savedInstanceState.getString(LAST_TWO_ARG_OPERATION);
+            lastOneArgumentOperation = savedInstanceState.getString(LAST_ONE_ARG_OPERATION);
+            wasCBtnAlreadyClickedOnce = Boolean.parseBoolean(savedInstanceState.getString(WAS_C_CLICKED));
         }
 
         btn1 = findViewById(R.id.btn1);
@@ -156,7 +163,7 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
 
             } else if (isOperationButton(buttonValue)) {
 
-                if (!(currentTextInTextView.isEmpty() || isProperNumber(currentTextInTextView))) {
+                if (currentTextInTextView.isEmpty() || !isProperNumber(currentTextInTextView)) {
                     Toast.makeText(getApplicationContext(), "You have to enter a proper number now.", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -164,15 +171,16 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
                 calculateOperation(buttonValue);
 
             } else if ("C".equals(buttonValue)) {
+                currentlyEnteredTextView.setText("");
+                lastOneArgumentOperation = "";
+
                 if (wasCBtnAlreadyClickedOnce) {
                     firstValue = Double.NaN;
                     secondValue = Double.NaN;
 
-                    currentlyEnteredTextView.setText("");
                     lastCalculationTextView.setText("");
                     wasCBtnAlreadyClickedOnce = false;
                 } else {
-                    currentlyEnteredTextView.setText("");
                     wasCBtnAlreadyClickedOnce = true;
                 }
 
@@ -180,9 +188,10 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
                 firstValue = Double.NaN;
                 secondValue = Double.NaN;
 
+                lastOneArgumentOperation = "";
                 currentlyEnteredTextView.setText("");
                 lastCalculationTextView.setText("");
-                lastOperation = "";
+                lastTwoArgumentOperation = "";
 
             } else if ("+/-".equals(buttonValue)) {
                 if (isProperNumber(currentTextInTextView)) {
@@ -209,6 +218,12 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
                 Double calculatedValue = calculateOneArgumentOperation(btnValue, currentTextInTextView);
                 if(Double.isNaN(calculatedValue)) return;
 
+                if(lastOneArgumentOperation.isEmpty()){
+                    lastOneArgumentOperation = btnValue + "("+currentTextInTextView+")";
+                } else {
+                    lastOneArgumentOperation = btnValue + "("+lastOneArgumentOperation+")";
+                }
+
                 currentlyEnteredTextView.setText(simpleFormat.format(calculatedValue));
             }
             return;
@@ -218,26 +233,44 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
             secondValue = Double.parseDouble(currentTextInTextView);
 
 
-            if (lastOperation.equals("+"))
+            if (lastTwoArgumentOperation.equals("+"))
                 firstValue += secondValue;
-            else if (lastOperation.equals("-"))
+            else if (lastTwoArgumentOperation.equals("-"))
                 firstValue -= secondValue;
-            else if (lastOperation.equals("*"))
+            else if (lastTwoArgumentOperation.equals("*"))
                 firstValue *= secondValue;
-            else if (lastOperation.equals("/")) {
+            else if (lastTwoArgumentOperation.equals("/")) {
                 if (secondValue == 0.0) {
                     Toast.makeText(getApplicationContext(), "Dividing by zero is not allowed", Toast.LENGTH_SHORT).show();
                     return;
                 } else firstValue /= secondValue;
-            } else if (lastOperation.equals("x^y")){
+            } else if (lastTwoArgumentOperation.equals("x^y")){
                 firstValue = Math.pow(firstValue, secondValue);
             }
 
-            lastCalculationTextView.setText(lastCalculationsText + simpleFormat.format(secondValue));
+            if(lastOneArgumentOperation.isEmpty()){
+                if("=".equals(lastTwoArgumentOperation)){
+                    lastCalculationTextView.setText(simpleFormat.format(secondValue));
+                } else {
+                    lastCalculationTextView.setText(lastCalculationsText + simpleFormat.format(secondValue));
+                }
+            } else {
+                if("=".equals(lastTwoArgumentOperation)){
+                    lastCalculationTextView.setText(lastOneArgumentOperation);
+                } else {
+                    lastCalculationTextView.setText(lastCalculationsText + lastOneArgumentOperation);
+                }
+                lastOneArgumentOperation = "";
+            }
             currentlyEnteredTextView.setText("");
         } else {
             firstValue = Double.parseDouble(currentTextInTextView);
-            lastCalculationTextView.setText(simpleFormat.format(firstValue));
+            if(lastOneArgumentOperation.isEmpty()){
+                lastCalculationTextView.setText(simpleFormat.format(firstValue));
+            } else {
+                lastCalculationTextView.setText(lastOneArgumentOperation);
+                lastOneArgumentOperation = "";
+            }
         }
 
         lastCalculationsText = lastCalculationTextView.getText().toString();
@@ -255,7 +288,7 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
             lastCalculationTextView.setText(lastCalculationsText + btnValue);
         }
 
-        lastOperation = btnValue;
+        lastTwoArgumentOperation = btnValue;
     }
 
     private Double calculateOneArgumentOperation(String operation, String currentlyEnteredText){
@@ -332,5 +365,8 @@ public class AdvancedCalculatorActivity extends AppCompatActivity implements Vie
         outState.putString(CURRENT_CALC, currentlyEnteredTextView.getText().toString());
         outState.putString(VALUE_ONE, String.valueOf(firstValue));
         outState.putString(VALUE_TWO, String.valueOf(secondValue));
+        outState.putString(LAST_TWO_ARG_OPERATION, lastTwoArgumentOperation);
+        outState.putString(LAST_ONE_ARG_OPERATION, lastOneArgumentOperation);
+        outState.putString(WAS_C_CLICKED, String.valueOf(wasCBtnAlreadyClickedOnce));
     }
 }
