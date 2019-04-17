@@ -1,5 +1,6 @@
 # Calculator
 Simple calculator app for university made to learn basic android concepts.
+
 (To simplify, it doesn't calculate according to mathematical sequence of operations, but calculates in the order in which operations were entered)
 
 # Guidelines: 
